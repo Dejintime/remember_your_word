@@ -25,7 +25,31 @@ class WordCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (word.imageUrl != null) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        word.imageUrl!,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 80,
+                            height: 80,
+                            color: Colors.grey[200],
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              color: Colors.grey,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                  ],
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

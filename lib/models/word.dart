@@ -7,6 +7,7 @@ class Word {
   final String chinese;
   final String? pronunciation; // 发音
   final String? example; // 例句
+  final String? imageUrl; // 单词对应的图片URL
   final List<String> tags; // 标签，如：难度、类别等
   final DateTime createdAt;
   DateTime lastReviewedAt;
@@ -20,6 +21,7 @@ class Word {
     required this.chinese,
     this.pronunciation,
     this.example,
+    this.imageUrl,
     this.tags = const [],
     required this.createdAt,
     required this.lastReviewedAt,
@@ -65,6 +67,7 @@ class Word {
       chinese: chinese,
       pronunciation: pronunciation,
       example: example,
+      imageUrl: imageUrl,
       tags: tags,
       createdAt: createdAt,
       lastReviewedAt: DateTime.now(),
@@ -81,6 +84,7 @@ class Word {
       'chinese': chinese,
       'pronunciation': pronunciation,
       'example': example,
+      'imageUrl': imageUrl,
       'tags': tags,
       'createdAt': createdAt.toIso8601String(),
       'lastReviewedAt': lastReviewedAt.toIso8601String(),
@@ -97,6 +101,7 @@ class Word {
       chinese: json['chinese'] as String,
       pronunciation: json['pronunciation'] as String?,
       example: json['example'] as String?,
+      imageUrl: json['imageUrl'] as String?,
       tags: List<String>.from(json['tags'] as List? ?? []),
       createdAt: DateTime.parse(json['createdAt'] as String),
       lastReviewedAt: DateTime.parse(json['lastReviewedAt'] as String),
@@ -112,6 +117,7 @@ class Word {
     String? chinese,
     String? pronunciation,
     String? example,
+    String? imageUrl,
     List<String>? tags,
     DateTime? createdAt,
     DateTime? lastReviewedAt,
@@ -125,6 +131,7 @@ class Word {
       chinese: chinese ?? this.chinese,
       pronunciation: pronunciation ?? this.pronunciation,
       example: example ?? this.example,
+      imageUrl: imageUrl ?? this.imageUrl,
       tags: tags ?? this.tags,
       createdAt: createdAt ?? this.createdAt,
       lastReviewedAt: lastReviewedAt ?? this.lastReviewedAt,
