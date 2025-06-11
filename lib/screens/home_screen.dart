@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/word_provider.dart';
 import '../services/storage_service.dart';
 import '../services/word_service.dart';
+import '../utils/app_theme.dart';
+import '../widgets/modern_components.dart';
 import 'word_list_screen.dart';
 import 'study_screen.dart';
 import '../widgets/word_card.dart';
@@ -65,10 +67,6 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('单词记忆助手'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
       body: Consumer<WordProvider>(
         builder: (context, wordProvider, child) {
           if (wordProvider.isLoading) {
@@ -99,93 +97,180 @@ class HomePage extends StatelessWidget {
 
           final stats = wordProvider.getStudyStatistics();
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 学习统计卡片
-                _buildStatsCard(context, stats),
-                const SizedBox(height: 24),
+          return CustomScrollView(
+            slivers: [
+              // 现代化的应用栏
+              SliverAppBar(
+                expandedHeight: 120,
+                floating: false,
+                pinned: true,
+                elevation: 0,
+                backgroundColor: AppTheme.background,
+                flexibleSpace: FlexibleSpaceBar(
+                  title: const Text(
+                    '单词记忆助手',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  background: Container(
+                    decoration: const BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                    ),
+                  ),
+                ),
+              ),
+              
+              // 主体内容
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppTheme.spaceLg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 统计卡片网格
+                      _buildStatsGrid(context, stats),
+                      const SizedBox(height: AppTheme.spaceXl),
 
-                // 今日复习
-                _buildSectionTitle(context, '今日复习'),
-                const SizedBox(height: 12),
-                _buildReviewSection(context, wordProvider),
-                const SizedBox(height: 24),
+                      // 学习进度
+                      _buildProgressSection(context, stats),
+                      const SizedBox(height: AppTheme.spaceXl),
 
-                // 快速操作
-                _buildSectionTitle(context, '快速操作'),
-                const SizedBox(height: 12),
-                _buildQuickActions(context),
-                const SizedBox(height: 24),
+                      // 今日复习
+                      _buildSectionTitle(context, '今日复习'),
+                      const SizedBox(height: AppTheme.spaceMd),
+                      _buildReviewSection(context, wordProvider),
+                      const SizedBox(height: AppTheme.spaceXl),
 
-                // 最近添加的单词
-                _buildSectionTitle(context, '最近添加'),
-                const SizedBox(height: 12),
-                _buildRecentWords(context, wordProvider),
-              ],
-            ),
+                      // 快速操作
+                      _buildSectionTitle(context, '快速操作'),
+                      const SizedBox(height: AppTheme.spaceMd),
+                      _buildQuickActions(context),
+                      const SizedBox(height: AppTheme.spaceXl),
+
+                      // 最近添加的单词
+                      _buildSectionTitle(context, '最近添加'),
+                      const SizedBox(height: AppTheme.spaceMd),
+                      _buildRecentWords(context, wordProvider),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),
     );
   }
 
-  Widget _buildStatsCard(BuildContext context, Map<String, dynamic> stats) {
-    return Card(
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Text(
-              '学习统计',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatItem(context, '总单词', stats['totalWords'].toString()),
-                _buildStatItem(context, '待复习', stats['reviewWords'].toString()),
-                _buildStatItem(context, '已掌握', stats['masteredWords'].toString()),
-              ],
-            ),
-            const SizedBox(height: 16),
-            LinearProgressIndicator(
-              value: stats['averageFamiliarity'],
-              backgroundColor: Colors.grey[300],
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).primaryColor,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '平均熟悉度: ${(stats['averageFamiliarity'] * 100).toStringAsFixed(1)}%',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
+  Widget _buildStatsGrid(BuildContext context, Map<String, dynamic> stats) {
+    return Row(
+      children: [
+        Expanded(
+          child: ModernStatsCard(
+            title: '总单词',
+            value: stats['totalWords'].toString(),
+            icon: Icons.library_books,
+            gradient: AppTheme.primaryGradient,
+          ),
         ),
-      ),
+        const SizedBox(width: AppTheme.spaceMd),
+        Expanded(
+          child: ModernStatsCard(
+            title: '待复习',
+            value: stats['reviewWords'].toString(),
+            icon: Icons.schedule,
+            gradient: AppTheme.warningGradient,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildStatItem(BuildContext context, String label, String value) {
+  Widget _buildProgressSection(BuildContext context, Map<String, dynamic> stats) {
     return Column(
       children: [
-        Text(
-          value,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).primaryColor,
-          ),
+        ModernProgressIndicator(
+          progress: stats['averageFamiliarity'],
+          label: '整体掌握度',
+          color: AppTheme.primaryColor,
         ),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium,
+        const SizedBox(height: AppTheme.spaceMd),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(AppTheme.spaceLg),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.successGradient,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  boxShadow: const [AppTheme.shadow],
+                ),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      color: AppTheme.textLight,
+                      size: 32,
+                    ),
+                    const SizedBox(height: AppTheme.spaceSm),
+                    Text(
+                      stats['masteredWords'].toString(),
+                      style: const TextStyle(
+                        color: AppTheme.textLight,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Text(
+                      '已掌握',
+                      style: TextStyle(
+                        color: AppTheme.textLight,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: AppTheme.spaceMd),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(AppTheme.spaceLg),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.cardGradient,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  boxShadow: const [AppTheme.shadow],
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.trending_up,
+                      color: AppTheme.primaryColor,
+                      size: 32,
+                    ),
+                    const SizedBox(height: AppTheme.spaceSm),
+                    Text(
+                      '${(stats['averageFamiliarity'] * 100).toInt()}%',
+                      style: const TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Text(
+                      '平均熟悉度',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -194,7 +279,9 @@ class HomePage extends StatelessWidget {
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title,
-      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+      style: const TextStyle(
+        color: AppTheme.textPrimary,
+        fontSize: 20,
         fontWeight: FontWeight.bold,
       ),
     );
@@ -202,110 +289,134 @@ class HomePage extends StatelessWidget {
 
   Widget _buildReviewSection(BuildContext context, WordProvider wordProvider) {
     if (wordProvider.reviewWords.isEmpty) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Icon(
-                Icons.check_circle,
-                size: 48,
-                color: Colors.green,
+      return Container(
+        padding: const EdgeInsets.all(AppTheme.spaceXl),
+        decoration: BoxDecoration(
+          gradient: AppTheme.successGradient,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          boxShadow: const [AppTheme.shadow],
+        ),
+        child: const Row(
+          children: [
+            Icon(
+              Icons.check_circle,
+              color: AppTheme.textLight,
+              size: 48,
+            ),
+            SizedBox(width: AppTheme.spaceLg),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '今日无需复习！',
+                    style: TextStyle(
+                      color: AppTheme.textLight,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: AppTheme.spaceXs),
+                  Text(
+                    '继续保持学习的好习惯',
+                    style: TextStyle(
+                      color: AppTheme.textLight,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                '今日无需复习！',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              Text(
-                '继续保持学习的好习惯',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
-    return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          child: Text(wordProvider.reviewWords.length.toString()),
-        ),
-        title: const Text('有单词需要复习'),
-        subtitle: Text('${wordProvider.reviewWords.length} 个单词等待复习'),
-        trailing: const Icon(Icons.arrow_forward_ios),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const StudyScreen(),
-            ),
-          );
-        },
+    return ModernListTile(
+      title: '有单词需要复习',
+      subtitle: '${wordProvider.reviewWords.length} 个单词等待复习',
+      leadingIcon: Icons.schedule,
+      iconColor: AppTheme.accentColor,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ModernBadge(
+            text: wordProvider.reviewWords.length.toString(),
+            color: AppTheme.accentColor,
+          ),
+          const SizedBox(width: AppTheme.spaceSm),
+          const Icon(
+            Icons.arrow_forward_ios,
+            color: AppTheme.textSecondary,
+            size: 16,
+          ),
+        ],
       ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const StudyScreen(),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildQuickActions(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: Card(
-            child: InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const StudyScreen(),
-                  ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.school,
-                      size: 32,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text('开始学习'),
-                  ],
-                ),
+        ModernActionButton(
+          text: '开始学习',
+          icon: Icons.school,
+          gradient: AppTheme.primaryGradient,
+          isLarge: true,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const StudyScreen(),
               ),
-            ),
-          ),
+            );
+          },
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Card(
-            child: InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const WordListScreen(),
-                  ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.add,
-                      size: 32,
-                      color: Theme.of(context).primaryColor,
+        const SizedBox(height: AppTheme.spaceMd),
+        Row(
+          children: [
+            Expanded(
+              child: ModernActionButton(
+                text: '词汇表',
+                icon: Icons.library_books,
+                backgroundColor: AppTheme.surface,
+                textColor: AppTheme.primaryColor,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const WordListScreen(),
                     ),
-                    const SizedBox(height: 8),
-                    const Text('添加单词'),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
-          ),
+            const SizedBox(width: AppTheme.spaceMd),
+            Expanded(
+              child: ModernActionButton(
+                text: '添加单词',
+                icon: Icons.add,
+                backgroundColor: AppTheme.surface,
+                textColor: AppTheme.accentColor,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const WordListScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -315,20 +426,50 @@ class HomePage extends StatelessWidget {
     final recentWords = wordProvider.words.take(3).toList();
     
     if (recentWords.isEmpty) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text(
-            '还没有添加单词，点击上方按钮开始添加吧！',
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
+      return Container(
+        padding: const EdgeInsets.all(AppTheme.spaceXl),
+        decoration: BoxDecoration(
+          gradient: AppTheme.cardGradient,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          boxShadow: const [AppTheme.shadow],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.school,
+              color: AppTheme.textSecondary,
+              size: 48,
+            ),
+            const SizedBox(height: AppTheme.spaceMd),
+            const Text(
+              '还没有添加单词',
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spaceXs),
+            const Text(
+              '点击上方按钮开始添加吧！',
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       );
     }
 
     return Column(
-      children: recentWords.map((word) => WordCard(word: word)).toList(),
+      children: recentWords.map((word) => 
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppTheme.spaceSm),
+          child: WordCard(word: word),
+        )
+      ).toList(),
     );
   }
 }
