@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'providers/word_provider.dart';
 import 'services/storage_service.dart';
 import 'screens/home_screen.dart';
+import 'utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,10 +46,7 @@ class MyApp extends StatelessWidget {
           value: snapshot.data!,
           child: MaterialApp(
             title: '单词记忆助手',
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-              useMaterial3: true,
-            ),
+            theme: AppTheme.lightTheme,
             home: const HomeScreen(),
             debugShowCheckedModeBanner: false,
           ),
